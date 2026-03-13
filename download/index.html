@@ -1,1 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Скачиватель фото блюд</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#121821;
+      --panel-2:#0f141c;
+      --text:#edf2f7;
+      --muted:#98a2b3;
+      --line:rgba(255,255,255,.08);
+      --accent:#ffffff;
+      --accent-text:#0b0f14;
+      --danger:#ff6b6b;
+      --ok:#3ddc97;
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,#0a0e13,#101722);color:var(--text)}
+    .wrap{max-width:920px;margin:0 auto;padding:24px}
+    .card{
+      background:rgba(18,24,33,.88);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:0 20px 60px rgba(0,0,0,.35);
+      overflow:hidden;
+      backdrop-filter:blur(16px);
+    }
+    .head{
+      padding:28px 28px 18px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0));
+    }
+    h1{margin:0 0 10px;font-size:30px;line-height:1.1}
+    .sub{margin:0;color:var(--muted);font-size:15px;line-height:1.6}
+    .body{padding:28px}
+    .label{display:block;font-size:13px;color:var(--muted);margin-bottom:10px}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    input[type="url"]{
+      flex:1 1 560px;
+      min-width:260px;
+      height:54px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:var(--panel-2);
+      color:var(--text);
+      padding:0 16px;
+      font-size:15px;
+      outline:none;
+    }
+    button{
+      height:54px;
+      border:none;
+      border-radius:16px;
+      padding:0 18px;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+    .btn-main{background:var(--accent);color:var(--accent-text)}
+    .btn-main:hover{transform:translateY(-1px)}
+    .btn-ghost{
+      background:transparent;
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+    .btn-ghost:hover{background:rgba(255,255,255,.04)}
+    .grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:16px;
+      margin-top:22px;
+    }
+    .panel{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:var(--panel-2);
+      padding:18px;
+    }
+    .panel h2{
+      margin:0 0 12px;
+      font-size:18px;
+    }
+    .steps{
+      margin:0;
+      padding-left:18px;
+      color:var(--text);
+      line-height:1.7;
+    }
+    .steps li+li{margin-top:4px}
+    textarea{
+      width:100%;
+      min-height:320px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#0a1017;
+      color:#d9e2ec;
+      padding:16px;
+      font:13px/1.55 Consolas, monospace;
+      resize:vertical;
+      outline:none;
+      white-space:pre;
+    }
+    .hint{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.6}
+    .status{
+      margin-top:14px;
+      font-size:14px;
+      color:var(--ok);
+      min-height:20px;
+    }
+    .warn{color:#ffd166}
+    .danger{color:var(--danger)}
+    .footer{
+      margin-top:18px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+    .code-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <h1>Скачиватель фото блюд</h1>
+        <p class="sub">
+          Вставь ссылку на страницу категории меню, открой её, затем вставь готовый скрипт в консоль браузера.
+          Скрипт скачает все найденные фотографии блюд без переименования и без смены формата.
+        </p>
+      </div>
 
+      <div class="body">
+        <label class="label" for="pageUrl">Ссылка на страницу категории</label>
+        <div class="row">
+          <input
+            id="pageUrl"
+            type="url"
+            placeholder="https://xn--80ahjc8bm9a.xn--p1ai/menu/tempurnye-rolly/"
+            value="https://xn--80ahjc8bm9a.xn--p1ai/menu/tempurnye-rolly/"
+          />
+          <button class="btn-main" id="openBtn">Открыть страницу</button>
+          <button class="btn-ghost" id="fillBtn">Подставить URL</button>
+        </div>
+
+        <div class="grid">
+          <div class="panel">
+            <h2>Что делать</h2>
+            <ol class="steps">
+              <li>Нажми <b>Открыть страницу</b>.</li>
+              <li>В новой вкладке откроется категория меню.</li>
+              <li>На этой странице нажми <b>F12</b> → вкладка <b>Console</b>.</li>
+              <li>Вернись в этот файл и нажми <b>Скопировать скрипт</b>.</li>
+              <li>Вставь скрипт в консоль и нажми <b>Enter</b>.</li>
+              <li>Фотографии начнут скачиваться в папку загрузок.</li>
+            </ol>
+            <div class="footer">
+              Если браузер спросит разрешение на множественные загрузки — разреши.
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Скрипт для вставки в консоль</h2>
+            <textarea id="scriptBox" readonly></textarea>
+            <div class="code-actions">
+              <button class="btn-main" id="copyBtn">Скопировать скрипт</button>
+              <button class="btn-ghost" id="copyMinBtn">Скопировать короткий вариант</button>
+            </div>
+            <div class="status" id="status"></div>
+            <div class="hint">
+              Скрипт ищет изображения на странице, отбирает ссылки с <b>/upload/</b>, исключает логотипы и служебные картинки,
+              затем скачивает найденные файлы как есть.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fullScript = `(async () => {
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const uniq = (arr) => [...new Set(arr.filter(Boolean))];
+
+  const toAbs = (url) => {
+    try {
+      return new URL(url, location.href).href;
+    } catch {
+      return null;
+    }
+  };
+
+  const raw = [...document.querySelectorAll('img')].flatMap(img => [
+    img.getAttribute('src'),
+    img.getAttribute('data-src'),
+    img.getAttribute('data-lazy-src'),
+    img.currentSrc
+  ]);
+
+  const imgs = raw.map(toAbs).filter(Boolean);
+
+  const photoUrls = uniq(
+    imgs.filter(url =>
+      /\\/upload\\//i.test(url) &&
+      !/logo|icon|favicon|banner|sprite|svg/i.test(url)
+    )
+  );
+
+  console.log('Найдено фото:', photoUrls.length);
+  console.log(photoUrls);
+
+  if (!photoUrls.length) {
+    alert('Фото не найдены.');
+    return;
+  }
+
+  for (const url of photoUrls) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = url.split('/').pop().split('?')[0];
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    await sleep(700);
+  }
+
+  console.log('Готово');
+  alert('Скачивание завершено. Проверь папку Загрузки.');
+})();`;
+
+    const shortScript = `(async()=>{const s=t=>new Promise(r=>setTimeout(r,t)),u=a=>[...new Set(a.filter(Boolean))],x=t=>{try{return new URL(t,location.href).href}catch{return null}},r=[...document.querySelectorAll('img')].flatMap(i=>[i.getAttribute('src'),i.getAttribute('data-src'),i.getAttribute('data-lazy-src'),i.currentSrc]).map(x).filter(Boolean),p=u(r.filter(v=>/\\/upload\\//i.test(v)&&!/logo|icon|favicon|banner|sprite|svg/i.test(v)));console.log('Найдено фото:',p.length,p);if(!p.length){alert('Фото не найдены.');return}for(const v of p){const a=document.createElement('a');a.href=v;a.download=v.split('/').pop().split('?')[0];document.body.appendChild(a);a.click();a.remove();await s(700)}alert('Скачивание завершено. Проверь папку Загрузки.');})();`;
+
+    const pageUrl = document.getElementById('pageUrl');
+    const scriptBox = document.getElementById('scriptBox');
+    const status = document.getElementById('status');
+    const openBtn = document.getElementById('openBtn');
+    const fillBtn = document.getElementById('fillBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const copyMinBtn = document.getElementById('copyMinBtn');
+
+    scriptBox.value = fullScript;
+
+    function setStatus(text, cls = '') {
+      status.className = 'status' + (cls ? ' ' + cls : '');
+      status.textContent = text;
+    }
+
+    async function copyText(text, okText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus(okText);
+      } catch {
+        setStatus('Не удалось скопировать автоматически. Скопируй вручную из поля ниже.', 'warn');
+      }
+    }
+
+    openBtn.addEventListener('click', () => {
+      const url = pageUrl.value.trim();
+      if (!url) {
+        setStatus('Вставь ссылку на страницу категории.', 'danger');
+        return;
+      }
+      window.open(url, '_blank', 'noopener,noreferrer');
+      setStatus('Страница открыта. Теперь вставь скрипт в Console на этой странице.');
+    });
+
+    fillBtn.addEventListener('click', () => {
+      pageUrl.value = 'https://xn--80ahjc8bm9a.xn--p1ai/menu/tempurnye-rolly/';
+      setStatus('Ссылка подставлена.');
+    });
+
+    copyBtn.addEventListener('click', () => copyText(fullScript, 'Полный скрипт скопирован.'));
+    copyMinBtn.addEventListener('click', () => copyText(shortScript, 'Короткий скрипт скопирован.'));
+  </script>
+</body>
+</html>
