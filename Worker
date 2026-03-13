@@ -1,81 +1,29 @@
-(async () => {
-  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-  const uniq = (arr) => [...new Set(arr.filter(Boolean))];
-  const abs = (url, base = location.href) => {
-    try { return new URL(url, base).href; } catch { return null; }
-  };
+const files = [
+"Bekon-Ten_360x360_df9.jpg",
+"Ebi-Tomago-Ten_360x360_df9.jpg",
+"Izumi-Tay-Ten_360x360_df9.jpg",
+"Kani-Ten_360x360_df9.jpg",
+"Karafuto-Ten_360x360_df9.jpg",
+"Kayge-Ten_360x360_df9.jpg",
+"Masago-Syake-Ten_360x360_df9.jpg",
+"Murugay-Ten_360x360_df9.jpg",
+"Retro_360x360_df9.jpg",
+"Surimi-Masago-Kappa-Ten_360x360_df9.jpg",
+"Surimi-Ten_360x360_df9.jpg",
+"Syake-Yasay-Ten_360x360_df9.jpg",
+"Tekka-Ten_360x360_df9.jpg",
+"Tomago-Maki-Ten_360x360_df9.jpg",
+"Toniku-Ebi-Ten_360x360_df9.jpg",
+"Tori-Ten_360x360_df9.jpg",
+"Unagi-Kappa-Ten_360x360_df9.jpg",
+"Yasay-Ten_360x360_df9.jpg"
+];
 
-  const exts = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
-  const isImageUrl = (url) => {
-    if (!url) return false;
-    const u = url.toLowerCase().split('?')[0];
-    return exts.some(ext => u.endsWith(ext));
-  };
-
-  const productLinks = uniq(
-    [...document.querySelectorAll('a[href]')]
-      .map(a => a.getAttribute('href'))
-      .map(href => abs(href))
-      .filter(Boolean)
-      .filter(href =>
-        href.includes('/menu/') &&
-        href.endsWith('.html') &&
-        !href.includes('#')
-      )
-  );
-
-  console.log('Найдено ссылок на товары:', productLinks.length);
-  console.log(productLinks);
-
-  const foundImages = [];
-
-  for (const pageUrl of productLinks) {
-    try {
-      const res = await fetch(pageUrl, { credentials: 'include' });
-      const html = await res.text();
-
-      const matches = [
-        ...html.matchAll(/https?:\/\/[^"'()\s>]+?\.(?:jpg|jpeg|png|webp|gif)(?:\?[^"'()\s>]*)?/gi),
-        ...html.matchAll(/\/[^"'()\s>]+?\.(?:jpg|jpeg|png|webp|gif)(?:\?[^"'()\s>]*)?/gi)
-      ].map(m => abs(m[0], pageUrl)).filter(Boolean);
-
-      const clean = matches.filter(url =>
-        isImageUrl(url) &&
-        !/logo|icon|favicon|sprite|banner/i.test(url)
-      );
-
-      if (clean.length) {
-        foundImages.push(...clean);
-        console.log('Фото найдены:', pageUrl, clean);
-      } else {
-        console.log('Фото не найдены на странице товара:', pageUrl);
-      }
-
-      await sleep(250);
-    } catch (e) {
-      console.warn('Ошибка чтения страницы товара:', pageUrl, e);
-    }
-  }
-
-  const images = uniq(foundImages);
-
-  console.log('ИТОГО фото:', images.length);
-  console.log(images);
-
-  if (!images.length) {
-    alert('Фото всё ещё не найдены. Напиши мне, и я дам ещё более жёсткий вариант через открытие карточек.');
-    return;
-  }
-
-  for (const url of images) {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = url.split('/').pop().split('?')[0];
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    await sleep(700);
-  }
-
-  alert(`Готово. Найдено и отправлено на скачивание: ${images.length} фото.`);
-})();
+files.forEach(f=>{
+  const a=document.createElement("a");
+  a.href="https://xn--80ahjc8bm9a.xn--p1ai/assets/cache_image/Rolli/Tempurnie/"+f;
+  a.download=f;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+});
