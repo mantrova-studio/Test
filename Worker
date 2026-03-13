@@ -1,29 +1,97 @@
-const files = [
-"Bekon-Ten_360x360_df9.jpg",
-"Ebi-Tomago-Ten_360x360_df9.jpg",
-"Izumi-Tay-Ten_360x360_df9.jpg",
-"Kani-Ten_360x360_df9.jpg",
-"Karafuto-Ten_360x360_df9.jpg",
-"Kayge-Ten_360x360_df9.jpg",
-"Masago-Syake-Ten_360x360_df9.jpg",
-"Murugay-Ten_360x360_df9.jpg",
-"Retro_360x360_df9.jpg",
-"Surimi-Masago-Kappa-Ten_360x360_df9.jpg",
-"Surimi-Ten_360x360_df9.jpg",
-"Syake-Yasay-Ten_360x360_df9.jpg",
-"Tekka-Ten_360x360_df9.jpg",
-"Tomago-Maki-Ten_360x360_df9.jpg",
-"Toniku-Ebi-Ten_360x360_df9.jpg",
-"Tori-Ten_360x360_df9.jpg",
-"Unagi-Kappa-Ten_360x360_df9.jpg",
-"Yasay-Ten_360x360_df9.jpg"
-];
+(async () => {
+  const TARGET_PATH = '/assets/cache_image/Rolli/Tempurnie/';
+  const DELAY = 1200;
 
-files.forEach(f=>{
-  const a=document.createElement("a");
-  a.href="https://xn--80ahjc8bm9a.xn--p1ai/assets/cache_image/Rolli/Tempurnie/"+f;
-  a.download=f;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-});
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const uniq = (arr) => [...new Set(arr.filter(Boolean))];
+
+  const toAbs = (url, base = location.href) => {
+    try {
+      return new URL(url, base).href;
+    } catch {
+      return null;
+    }
+  };
+
+  const extractUrlsFromStyle = (styleValue) => {
+    if (!styleValue) return [];
+    return [...styleValue.matchAll(/url\((['"]?)(.*?)\1\)/gi)]
+      .map(m => m[2])
+      .filter(Boolean);
+  };
+
+  window.scrollTo(0, 0);
+  await sleep(400);
+
+  let lastHeight = 0;
+  for (let i = 0; i < 20; i++) {
+    window.scrollTo(0, document.body.scrollHeight);
+    await sleep(700);
+    const h = document.body.scrollHeight;
+    if (h === lastHeight) break;
+    lastHeight = h;
+  }
+
+  await sleep(800);
+
+  const fromImgs = [...document.querySelectorAll('img')]
+    .flatMap(img => [
+      img.src,
+      img.currentSrc,
+      img.getAttribute('src'),
+      img.getAttribute('data-src'),
+      img.getAttribute('data-lazy-src')
+    ]);
+
+  const fromLinks = [...document.querySelectorAll('[href]')]
+    .map(el => el.getAttribute('href'));
+
+  const fromStyles = [...document.querySelectorAll('*')]
+    .flatMap(el => {
+      const urls = [];
+      const inlineStyle = el.getAttribute('style');
+      if (inlineStyle) urls.push(...extractUrlsFromStyle(inlineStyle));
+
+      const bg = getComputedStyle(el).backgroundImage;
+      if (bg && bg !== 'none') urls.push(...extractUrlsFromStyle(bg));
+
+      return urls;
+    });
+
+  const fromPerformance = performance.getEntriesByType('resource')
+    .map(r => r.name);
+
+  const allUrls = uniq(
+    [...fromImgs, ...fromLinks, ...fromStyles, ...fromPerformance]
+      .map(u => toAbs(u))
+      .filter(Boolean)
+      .filter(u => u.includes(TARGET_PATH))
+      .filter(u => /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(u))
+  );
+
+  console.log('Найдено изображений:', allUrls.length);
+  console.log(allUrls);
+
+  if (!allUrls.length) {
+    alert('Не удалось найти изображения по этому пути.');
+    return;
+  }
+
+  for (let i = 0; i < allUrls.length; i++) {
+    const url = allUrls[i];
+    const name = url.split('/').pop().split('?')[0];
+
+    console.log(`Скачивание ${i + 1}/${allUrls.length}: ${name}`);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    await sleep(DELAY);
+  }
+
+  alert(`Готово. Отправлено на скачивание: ${allUrls.length} файлов.`);
+})();
