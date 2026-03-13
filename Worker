@@ -1,32 +1,73 @@
 (async () => {
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-
   const uniq = (arr) => [...new Set(arr.filter(Boolean))];
-
-  const toAbs = (url) => {
-    try {
-      return new URL(url, location.href).href;
-    } catch {
-      return null;
-    }
+  const abs = (url, base = location.href) => {
+    try { return new URL(url, base).href; } catch { return null; }
   };
 
-  const imgs = [...document.querySelectorAll('img')]
-    .map(img => img.getAttribute('src') || img.getAttribute('data-src') || img.getAttribute('data-lazy-src'))
-    .map(toAbs)
-    .filter(Boolean);
+  const exts = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+  const isImageUrl = (url) => {
+    if (!url) return false;
+    const u = url.toLowerCase().split('?')[0];
+    return exts.some(ext => u.endsWith(ext));
+  };
 
-  const photoUrls = uniq(
-    imgs.filter(url =>
-      /\/upload\//i.test(url) &&
-      !/logo|icon|favicon|banner|svg/i.test(url)
-    )
+  const productLinks = uniq(
+    [...document.querySelectorAll('a[href]')]
+      .map(a => a.getAttribute('href'))
+      .map(href => abs(href))
+      .filter(Boolean)
+      .filter(href =>
+        href.includes('/menu/') &&
+        href.endsWith('.html') &&
+        !href.includes('#')
+      )
   );
 
-  console.log('Найдено фото:', photoUrls.length);
-  console.log(photoUrls);
+  console.log('Найдено ссылок на товары:', productLinks.length);
+  console.log(productLinks);
 
-  for (const url of photoUrls) {
+  const foundImages = [];
+
+  for (const pageUrl of productLinks) {
+    try {
+      const res = await fetch(pageUrl, { credentials: 'include' });
+      const html = await res.text();
+
+      const matches = [
+        ...html.matchAll(/https?:\/\/[^"'()\s>]+?\.(?:jpg|jpeg|png|webp|gif)(?:\?[^"'()\s>]*)?/gi),
+        ...html.matchAll(/\/[^"'()\s>]+?\.(?:jpg|jpeg|png|webp|gif)(?:\?[^"'()\s>]*)?/gi)
+      ].map(m => abs(m[0], pageUrl)).filter(Boolean);
+
+      const clean = matches.filter(url =>
+        isImageUrl(url) &&
+        !/logo|icon|favicon|sprite|banner/i.test(url)
+      );
+
+      if (clean.length) {
+        foundImages.push(...clean);
+        console.log('Фото найдены:', pageUrl, clean);
+      } else {
+        console.log('Фото не найдены на странице товара:', pageUrl);
+      }
+
+      await sleep(250);
+    } catch (e) {
+      console.warn('Ошибка чтения страницы товара:', pageUrl, e);
+    }
+  }
+
+  const images = uniq(foundImages);
+
+  console.log('ИТОГО фото:', images.length);
+  console.log(images);
+
+  if (!images.length) {
+    alert('Фото всё ещё не найдены. Напиши мне, и я дам ещё более жёсткий вариант через открытие карточек.');
+    return;
+  }
+
+  for (const url of images) {
     const a = document.createElement('a');
     a.href = url;
     a.download = url.split('/').pop().split('?')[0];
@@ -36,5 +77,5 @@
     await sleep(700);
   }
 
-  console.log('Готово');
+  alert(`Готово. Найдено и отправлено на скачивание: ${images.length} фото.`);
 })();
